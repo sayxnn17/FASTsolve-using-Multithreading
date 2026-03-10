@@ -1,0 +1,2 @@
+Write a C program that takes the number of equations (n) as a command-line argument, generates a random system of (n) linear equations, saves the generated matrix and constants to an input.txt file, computes the determinant recursively, solves the system using Cramer’s Rule with POSIX threads where each thread calculates one variable, compares execution time when the number of threads equals the number of variables versus the number of CPU cores, and finally writes the computed solutions and timing results to solution.txt.
+
