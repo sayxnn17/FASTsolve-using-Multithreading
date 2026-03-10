@@ -1,14 +1,14 @@
 <h1 align="center">FASTsolve using Multithreading</h1>
 
 <p align="center">
-High-performance C++ implementation of <b>Cramer's Rule</b> using <b>multithreading</b> to solve systems of linear equations efficiently.
+High-performance C implementation of <b>Cramer's Rule</b> using <b>multithreading</b> to solve systems of linear equations efficiently.
 </p>
 
 ---
 
 ## Overview
 
-FASTsolve is a C++ project that solves systems of linear equations using **Cramer's Rule**, while improving performance through **multithreading**.
+FASTsolve is a C project that solves systems of linear equations using **Cramer's Rule**, while improving performance through **multithreading**.
 
 Cramer's Rule requires multiple determinant calculations. Since each determinant is independent, they can be computed in parallel, making the algorithm a good demonstration of **parallel numerical computation**.
 
@@ -96,7 +96,7 @@ Using multithreading:
 
 ## Concepts Demonstrated
 
-- Multithreading in C++
+- Multithreading in C
 - Parallel computation
 - Numerical methods
 - Matrix determinant calculation
