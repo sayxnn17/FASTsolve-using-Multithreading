@@ -1,17 +1,21 @@
 ===== Solution Using Cramer's Rule =====
 
-x0 = 0.428362
-x1 = 1.415314
-x2 = 1.306272
-x3 = -0.400981
-x4 = 2.183456
-x5 = -0.629239
-x6 = 1.671729
-x7 = 0.337083
+x0 = 1.997132
+x1 = 1.332179
+x2 = 0.953036
+x3 = 0.475429
+x4 = -0.368052
+x5 = -0.681063
+x6 = 0.725315
+x7 = 2.791109
+x8 = -1.511300
+x9 = 1.405121
+x10 = 0.870101
+x11 = 0.363630
 
 --- Performance Comparison ---
-Threads = Variables (8)
-Execution Time: 0.003931 seconds
+Threads = Variables (12)
+Execution Time: 56.728218 seconds
 
 Threads = CPUs (16)
-Execution Time: 0.003891 seconds
+Execution Time: 58.316620 seconds
