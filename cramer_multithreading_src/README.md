@@ -63,16 +63,16 @@ So the program:
 ```
 cramer_multithreading_src
 │
-├── main.cpp
+├── main.c
 │   Entry point of the program
 │
-├── cramer.cpp
+├── cramer.c
 │   Implementation of Cramer's Rule
 │
 ├── cramer.h
 │   Function declarations and structures
 │
-├── thread_worker.cpp
+├── thread_worker.c
 │   Worker thread logic
 │
 ├── thread_worker.h
