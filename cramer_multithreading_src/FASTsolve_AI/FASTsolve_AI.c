@@ -1,0 +1,214 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
+#include <unistd.h>
+
+#define MAX 2000
+
+double A[MAX][MAX];
+double B[MAX];
+double X[MAX];
+
+int n;
+
+/* Structure for thread arguments */
+typedef struct {
+    int index;
+    double detA;
+} ThreadData;
+
+/* Function to compute determinant recursively */
+double determinant(double matrix[MAX][MAX], int size) {
+
+    if (size == 1)
+        return matrix[0][0];
+
+    double det = 0;
+    double submatrix[MAX][MAX];
+
+    for (int x = 0; x < size; x++) {
+
+        int subi = 0;
+
+        for (int i = 1; i < size; i++) {
+            int subj = 0;
+
+            for (int j = 0; j < size; j++) {
+
+                if (j == x)
+                    continue;
+
+                submatrix[subi][subj] = matrix[i][j];
+                subj++;
+            }
+
+            subi++;
+        }
+
+        double sign = (x % 2 == 0) ? 1 : -1;
+
+        det += sign * matrix[0][x] *
+               determinant(submatrix, size - 1);
+    }
+
+    return det;
+}
+
+/* Thread function for solving variable using Cramer's rule */
+void* solve_variable(void* arg) {
+
+    ThreadData* data = (ThreadData*)arg;
+
+    int k = data->index;
+
+    double temp[MAX][MAX];
+
+    for(int i=0;i<n;i++)
+        for(int j=0;j<n;j++)
+            temp[i][j] = A[i][j];
+
+    for(int i=0;i<n;i++)
+        temp[i][k] = B[i];
+
+    double detAk = determinant(temp, n);
+
+    X[k] = detAk / data->detA;
+
+    pthread_exit(NULL);
+}
+
+/* Generate random system */
+void generate_system() {
+
+    srand(time(NULL));
+
+    for(int i=0;i<n;i++) {
+
+        for(int j=0;j<n;j++)
+            A[i][j] = rand()%10 + 1;
+
+        B[i] = rand()%10 + 1;
+    }
+}
+
+/* Save equations to file */
+void save_input_file() {
+
+    FILE *f = fopen("input.txt","w");
+
+    for(int i=0;i<n;i++) {
+
+        for(int j=0;j<n;j++)
+            fprintf(f,"%lf ",A[i][j]);
+
+        fprintf(f,"%lf\n",B[i]);
+    }
+
+    fclose(f);
+}
+
+/* Save solution to file */
+void save_solution_file(double timeVar, double timeCPU) {
+
+    FILE *f = fopen("solution.txt","w");
+
+    fprintf(f,"System size: %d\n\n",n);
+
+    fprintf(f,"Solution using Cramer's Rule:\n");
+
+    for(int i=0;i<n;i++)
+        fprintf(f,"x%d = %lf\n",i,X[i]);
+
+    fprintf(f,"\nPerformance Comparison\n");
+
+    fprintf(f,"Threads = Variables : %lf seconds\n",timeVar);
+    fprintf(f,"Threads = CPUs      : %lf seconds\n",timeCPU);
+
+    fclose(f);
+}
+
+int main(int argc, char* argv[]) {
+
+    if(argc != 2) {
+        printf("Usage: %s <number_of_equations>\n",argv[0]);
+        return 0;
+    }
+
+    n = atoi(argv[1]);
+
+    if(n <= 0 || n > MAX) {
+        printf("Invalid system size\n");
+        return 0;
+    }
+
+    generate_system();
+
+    save_input_file();
+
+    printf("System generated and saved to input.txt\n");
+
+    /* Skip solving if system too large */
+    if(n > 10) {
+
+        printf("n > 10 : Cramer's rule skipped due to factorial complexity\n");
+
+        FILE *f = fopen("solution.txt","w");
+        fprintf(f,"System size = %d\n",n);
+        fprintf(f,"Matrix generated but solving skipped (Cramer's rule impractical for large n)\n");
+        fclose(f);
+
+        return 0;
+    }
+
+    pthread_t threads[MAX];
+    ThreadData data[MAX];
+
+    /* Compute determinant of A */
+    double detA = determinant(A,n);
+
+    if(detA == 0) {
+        printf("System has no unique solution\n");
+        return 0;
+    }
+
+    /* -------- threads = variables -------- */
+
+    clock_t start = clock();
+
+    for(int i=0;i<n;i++) {
+
+        data[i].index = i;
+        data[i].detA = detA;
+
+        pthread_create(&threads[i],NULL,solve_variable,&data[i]);
+    }
+
+    for(int i=0;i<n;i++)
+        pthread_join(threads[i],NULL);
+
+    double timeVar = (double)(clock()-start)/CLOCKS_PER_SEC;
+
+    /* -------- threads = CPUs -------- */
+
+    int cpu = sysconf(_SC_NPROCESSORS_ONLN);
+
+    start = clock();
+
+    for(int i=0;i<n;i++) {
+
+        data[i].index = i;
+        data[i].detA = detA;
+
+        pthread_create(&threads[i%cpu],NULL,solve_variable,&data[i]);
+        pthread_join(threads[i%cpu],NULL);
+    }
+
+    double timeCPU = (double)(clock()-start)/CLOCKS_PER_SEC;
+
+    save_solution_file(timeVar,timeCPU);
+
+    printf("Solution saved to solution.txt\n");
+
+    return 0;
+}
